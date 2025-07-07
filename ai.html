@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Job Recommendation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3a0ca3',
+              primaryDark: '#2a0a78',
+              secondary: '#4361ee',
+              accent: '#4cc9f0',
+              light: '#f8f9fa',
+              dark: '#212529',
+              gray: '#6c757d',
+              lightGray: '#e9ecef',
+              border: '#dee2e6',
+              success: '#2ecc71',
+              warning: '#f39c12',
+              danger: '#e74c3c'
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.6.0/dist/full.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+      }
+      
+      body {
+        background: linear-gradient(135deg, #b2ebf2 0%, #b2ebf2 100%);
+        min-height: 100vh;
+      }
+      
+      .card {
+        transition: all 0.3s ease;
+      }
+      
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      }
+      
+      .loading-spinner {
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <!-- Header -->
+    <header class="w-full max-w-4xl mb-8">
+      <div class="flex items-center justify-between bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl shadow-lg p-5">
+        <div class="flex items-center">
+          <div class="bg-white p-2 rounded-lg mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3a0ca3" width="24" height="24">
+              <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold">AI Job Recommender</h1>
+            <p class="text-sm opacity-80">Find your perfect job match</p>
+          </div>
+        </div>
+        
+        <button id="logout-btn" class="py-2 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="w-full max-w-4xl flex flex-col md:flex-row gap-6">
+      <!-- Card 1: Recommendation Form -->
+      <div class="card w-full md:w-1/2 bg-white rounded-xl shadow-md p-6">
+        <div class="flex items-center mb-6">
+          <i class="fas fa-robot text-primary text-2xl mr-3"></i>
+          <h2 class="text-2xl font-bold">Job Recommendation</h2>
+        </div>
+        
+        <form id="recommendForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Describe your skills and experience</label>
+            <textarea
+              name="prompt"
+              id="prompt"
+              rows="6"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Example: I have 5 years of experience as a frontend developer with React, TypeScript, and CSS. I've built several e-commerce applications and have experience with state management..."
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full py-3 bg-primary hover:bg-primaryDark text-white font-medium rounded-xl transition-colors flex items-center justify-center">
+            <i class="fas fa-magic mr-2"></i> Get Job Recommendations
+          </button>
+        </form>
+      </div>
+      
+      <!-- Card 2: Results -->
+      <div class="card w-full md:w-1/2 bg-white rounded-xl shadow-md p-6">
+        <div class="flex items-center mb-6">
+          <i class="fas fa-briefcase text-primary text-2xl mr-3"></i>
+          <h2 class="text-2xl font-bold">Recommended Jobs</h2>
+        </div>
+        
+        <div id="results" class="mt-4">
+          <div class="text-center p-8">
+            <i class="fas fa-lightbulb text-yellow-400 text-4xl mb-3"></i>
+            <p class="text-gray-600">Enter your skills and experience to get AI-powered job recommendations</p>
+          </div>
+          
+          <ul id="jobList" class="space-y-3 hidden"></ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- How It Works Section -->
+    <div class="w-full max-w-4xl mt-8">
+      <div class="card bg-white rounded-xl shadow-md p-6">
+        <div class="flex items-center mb-6">
+          <i class="fas fa-info-circle text-primary text-2xl mr-3"></i>
+          <h2 class="text-2xl font-bold">How It Works</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-3">
+              <i class="fas fa-edit"></i>
+            </div>
+            <h3 class="font-semibold mb-2">Describe Your Skills</h3>
+            <p class="text-sm text-gray-600">Tell us about your experience, skills, and career interests</p>
+          </div>
+          
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-3">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3 class="font-semibold mb-2">AI Analysis</h3>
+            <p class="text-sm text-gray-600">Our AI analyzes your profile against thousands of job requirements</p>
+          </div>
+          
+          <div class="bg-green-50 p-4 rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-3">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <h3 class="font-semibold mb-2">Get Matches</h3>
+            <p class="text-sm text-gray-600">Receive personalized job recommendations that fit your profile</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <footer class="text-center py-6 text-gray-500 text-sm mt-8">
+      <p>© 2025 AI Job Recommender. All rights reserved.</p>
+    </footer>
+
+    <script>
+      const form = document.getElementById('recommendForm');
+      const resultsBox = document.getElementById('results');
+      const jobList = document.getElementById('jobList');
+      const logoutBtn = document.getElementById('logout-btn');
+      
+      // Get auth token from localStorage
+      const authToken = localStorage.getItem('authToken');
+
+      // Add logout functionality
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('authToken');
+        alert('You have been logged out');
+        window.location.reload();
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const prompt = document.getElementById('prompt').value;
+        
+        // Check if token exists
+        if (!authToken) {
+          alert('You need to login first!');
+          return;
+        }
+
+        try {
+          // Show loading state
+          resultsBox.innerHTML = `
+            <div class="text-center py-8">
+              <div class="loading-spinner inline-block w-12 h-12 border-t-4 border-primary rounded-full mb-3"></div>
+              <p class="text-gray-600">Analyzing your profile...</p>
+            </div>
+          `;
+          
+          const response = await fetch('http://localhost:5000/api/ai/recommend-jobs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ prompt })
+          });
+
+          const data = await response.json();
+          console.log(data);
+
+          if (response.ok && Array.isArray(data.recommendedJobs)) {
+            resultsBox.innerHTML = `
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2">Recommended Jobs:</h3>
+                <p class="text-sm text-gray-600 mb-4">Based on your skills and experience</p>
+              </div>
+            `;
+            
+            jobList.innerHTML = '';
+            jobList.classList.remove('hidden');
+            
+            data.recommendedJobs.forEach(job => {
+              const li = document.createElement('li');
+              li.className = 'p-4 bg-gray-50 rounded-lg flex items-start';
+              li.innerHTML = `
+                <div class="mr-3 mt-1">
+                  <i class="fas fa-briefcase text-primary"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">${job}</h4>
+                  <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Match: 92%</span>
+                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Salary: $80k-$110k</span>
+                    <span class="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">Remote</span>
+                  </div>
+                </div>
+              `;
+              jobList.appendChild(li);
+            });
+            
+            resultsBox.appendChild(jobList);
+          } else {
+            resultsBox.innerHTML = `
+              <div class="text-center py-8 text-red-500">
+                <i class="fas fa-exclamation-triangle text-2xl mb-3"></i>
+                <p>${data.error || 'Failed to get recommendations'}</p>
+              </div>
+            `;
+          }
+        } catch (err) {
+          console.error(err);
+          resultsBox.innerHTML = `
+            <div class="text-center py-8 text-red-500">
+              <i class="fas fa-exclamation-triangle text-2xl mb-3"></i>
+              <p>Error contacting server. Please try again later.</p>
+            </div>
+          `;
+        }
+      });
+    </script>
+  </body>
+</html>

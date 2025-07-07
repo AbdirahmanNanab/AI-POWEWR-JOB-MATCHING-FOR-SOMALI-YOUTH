@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3a0ca3',
+                        primaryDark: '#2a0a78',
+                        secondary: '#4361ee',
+                        light: '#f8f9fa',
+                        dark: '#212529',
+                        gray: '#6c757d',
+                        lightGray: '#e9ecef',
+                        border: '#dee2e6',
+                        success: '#2ecc71',
+                        warning: '#f39c12',
+                        danger: '#e74c3c'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #b2ebf2 0%, #e4e7eb 100%);
+            min-height: 100vh;
+        }
+        
+        .dashboard-section {
+            display: none;
+        }
+        
+        .dashboard-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-admin {
+            background-color: #3a0ca3;
+            color: white;
+        }
+        
+        .badge-user {
+            background-color: #4361ee;
+            color: white;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl shadow-lg p-5 mb-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="bg-white p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3a0ca3" width="24" height="24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">Admin Dashboard</h1>
+                    <p class="text-sm opacity-80">System Administration Panel</p>
+                </div>
+            </div>
+            
+            <button id="logout-btn" class="py-2 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="stat-card">
+                <div class="flex items-center mb-3">
+                    <div class="bg-blue-100 text-blue-600 rounded-xl w-10 h-10 flex items-center justify-center mr-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold">Users</h3>
+                </div>
+                <div class="text-3xl font-bold" id="users-count">0</div>
+                <div class="mt-auto pt-2 text-sm text-gray-500">Total registered users</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="flex items-center mb-3">
+                    <div class="bg-purple-100 text-purple-600 rounded-xl w-10 h-10 flex items-center justify-center mr-3">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold">Jobs</h3>
+                </div>
+                <div class="text-3xl font-bold" id="jobs-count">0</div>
+                <div class="mt-auto pt-2 text-sm text-gray-500">Total job listings</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="flex items-center mb-3">
+                    <div class="bg-green-100 text-green-600 rounded-xl w-10 h-10 flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold">Activity</h3>
+                </div>
+                <div class="text-3xl font-bold" id="activity-count">0</div>
+                <div class="mt-auto pt-2 text-sm text-gray-500">Today's activity</div>
+            </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-6 mb-8">
+            <!-- Sidebar Navigation -->
+            <div class="w-full md:w-64 bg-white rounded-xl shadow-md p-4 h-fit">
+                <div class="space-y-2">
+                    <button class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium flex items-center transition-colors bg-primary text-white" data-section="users">
+                        <i class="fas fa-users mr-3"></i> Manage Users
+                    </button>
+                    <button class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium flex items-center transition-colors hover:bg-gray-100" data-section="jobs">
+                        <i class="fas fa-briefcase mr-3"></i> Manage Jobs
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-1">
+                <!-- Users Section -->
+                <div id="users" class="dashboard-section active bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-primary text-2xl mr-3"></i>
+                            <h2 class="text-2xl font-bold">User Management</h2>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="user-search" class="px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search users...">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-list" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="3" class="px-6 py-8 text-center">
+                                        <div class="loading-spinner inline-block w-12 h-12 border-t-4 border-primary rounded-full"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Jobs Section -->
+                <div id="jobs" class="dashboard-section bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-briefcase text-primary text-2xl mr-3"></i>
+                            <h2 class="text-2xl font-bold">Job Management</h2>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="job-search" class="px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search jobs...">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-list" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-8 text-center">
+                                        <div class="loading-spinner inline-block w-12 h-12 border-t-4 border-primary rounded-full"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center py-6 text-gray-500 text-sm">
+            <p>ENG Abdirahman Nanab. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:5000/api/admin';
+        const AUTH_TOKEN = localStorage.getItem('authToken');
+        let currentUsers = [];
+        let currentJobs = [];
+
+        // DOM Elements
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = {
+            users: document.getElementById('users'),
+            jobs: document.getElementById('jobs')
+        };
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        const usersList = document.getElementById('users-list');
+        const jobsList = document.getElementById('jobs-list');
+        const userSearch = document.getElementById('user-search');
+        const jobSearch = document.getElementById('job-search');
+        const usersCount = document.getElementById('users-count');
+        const jobsCount = document.getElementById('jobs-count');
+        const activityCount = document.getElementById('activity-count');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!AUTH_TOKEN) {
+                alert('You need to login first!');
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Navigation handling
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetSection = this.getAttribute('data-section');
+                    
+                    // Update active button
+                    navButtons.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('hover:bg-gray-100');
+                    });
+                    this.classList.add('bg-primary', 'text-white');
+                    this.classList.remove('hover:bg-gray-100');
+                    
+                    // Show section
+                    Object.values(sections).forEach(section => section.classList.remove('active'));
+                    sections[targetSection].classList.add('active');
+                    
+                    // Load data if needed
+                    if (targetSection === 'users') {
+                        loadUsers();
+                    } else if (targetSection === 'jobs') {
+                        loadJobs();
+                    }
+                });
+            });
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'auth.html';
+            });
+
+            // Search functionality
+            userSearch.addEventListener('input', filterUsers);
+            jobSearch.addEventListener('input', filterJobs);
+            
+            // Load initial data
+            loadUsers();
+            loadJobs();
+        });
+
+        // Load users from API
+        async function loadUsers() {
+            try {
+                // Show loading state
+                usersList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center"><div class="loading-spinner inline-block w-12 h-12 border-t-4 border-primary rounded-full"></div></td></tr>';
+                
+                // Fetch users from API
+                const response = await fetch(`${API_BASE}/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load users');
+                
+                const users = await response.json();
+                currentUsers = users;
+                
+                // Update stats
+                usersCount.textContent = users.length;
+                activityCount.textContent = users.length > 0 ? Math.floor(users.length / 2) : 0;
+                
+                // Render users
+                renderUsers(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                usersList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-red-500">Error loading users. Please try again.</td></tr>';
+            }
+        }
+
+        // Load jobs from API
+        async function loadJobs() {
+            try {
+                // Show loading state
+                jobsList.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center"><div class="loading-spinner inline-block w-12 h-12 border-t-4 border-primary rounded-full"></div></td></tr>';
+                
+                // Fetch jobs from API
+                const response = await fetch(`${API_BASE}/jobs`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load jobs');
+                
+                const jobs = await response.json();
+                currentJobs = jobs;
+                
+                // Update stats
+                jobsCount.textContent = jobs.length;
+                
+                // Render jobs
+                renderJobs(jobs);
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                jobsList.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-red-500">Error loading jobs. Please try again.</td></tr>';
+            }
+        }
+
+        // Render users to the table
+        function renderUsers(users) {
+            if (!users || users.length === 0) {
+                usersList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No users found</td></tr>';
+                return;
+            }
+            
+            usersList.innerHTML = '';
+            
+            users.forEach(user => {
+                const date = new Date(user.createdAt).toLocaleDateString();
+                const roleClass = user.role === 'admin' ? 'badge-admin' : 'badge-user';
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${user.email}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="${roleClass} role-badge">${user.role}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${date}
+                    </td>
+                `;
+                
+                usersList.appendChild(row);
+            });
+        }
+
+        // Render jobs to the table
+        function renderJobs(jobs) {
+            if (!jobs || jobs.length === 0) {
+                jobsList.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No jobs found</td></tr>';
+                return;
+            }
+            
+            jobsList.innerHTML = '';
+            
+            jobs.forEach(job => {
+                const date = new Date(job.createdAt).toLocaleDateString();
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${job.title}</div>
+                        <div class="text-sm text-gray-500 mt-1 line-clamp-2">${job.description}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${job.type}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${job.salary}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${date}
+                    </td>
+                `;
+                
+                jobsList.appendChild(row);
+            });
+        }
+
+        // Filter users based on search input
+        function filterUsers() {
+            const searchTerm = userSearch.value.toLowerCase();
+            if (!searchTerm) {
+                renderUsers(currentUsers);
+                return;
+            }
+            
+            const filteredUsers = currentUsers.filter(user => 
+                user.email.toLowerCase().includes(searchTerm) ||
+                user.role.toLowerCase().includes(searchTerm)
+            );
+            
+            renderUsers(filteredUsers);
+        }
+
+        // Filter jobs based on search input
+        function filterJobs() {
+            const searchTerm = jobSearch.value.toLowerCase();
+            if (!searchTerm) {
+                renderJobs(currentJobs);
+                return;
+            }
+            
+            const filteredJobs = currentJobs.filter(job => 
+                job.title.toLowerCase().includes(searchTerm) ||
+                job.description.toLowerCase().includes(searchTerm) ||
+                job.type.toLowerCase().includes(searchTerm)
+            );
+            
+            renderJobs(filteredJobs);
+        }
+    </script>
+</body>
+</html>

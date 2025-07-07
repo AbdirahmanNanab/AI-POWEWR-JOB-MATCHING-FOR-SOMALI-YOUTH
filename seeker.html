@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobConnect - Seeker Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        primaryDark: '#3a0ca3',
+                        secondary: '#7209b7',
+                        success: '#4cc9f0',
+                        light: '#f8f9fa',
+                        dark: '#212529',
+                        gray: '#6c757d',
+                        lightGray: '#e9ecef',
+                        border: '#dee2e6',
+                    },
+                    boxShadow: {
+                        card: '0 4px 20px rgba(0,0,0,0.08)',
+                        hover: '0 10px 25px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #b2ebf2, #b2ebf2, #b2ebf2);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+        
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .sidebar {
+            background: linear-gradient(to bottom, #3a0ca3, #4361ee);
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left: 3px solid #4cc9f0;
+        }
+        
+        .job-card, .app-card {
+            transition: all 0.3s ease;
+        }
+        
+        .job-card:hover, .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .btn-apply:hover {
+            background: #3a0ca3;
+        }
+        
+        .btn-save:hover {
+            background: #e9ecef;
+        }
+        
+        .notification-badge {
+            top: -5px;
+            right: -8px;
+        }
+        
+        .skill-tag {
+            background: #f0f2f5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .saved {
+            color: #4361ee;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-reviewed {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-offer {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .tab-indicator {
+            height: 3px;
+            background: #4361ee;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex">
+    <!-- Sidebar -->
+    <div class="w-64 fixed h-screen sidebar text-white p-0 shadow-lg">
+        <div class="p-5 flex items-center border-b border-white/10">
+            <div class="bg-white p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4361ee" width="24" height="24">
+                    <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold">CareerConnect</h1>
+        </div>
+        
+        <div class="py-4">
+            <div class="nav-item active py-3 px-6 flex items-center cursor-pointer transition-all" data-section="profile">
+                <i class="fas fa-user mr-3"></i>
+                <span>My Profile</span>
+            </div>
+            <div class="nav-item py-3 px-6 flex items-center cursor-pointer transition-all" data-section="jobs">
+                <i class="fas fa-briefcase mr-3"></i>
+                <span>Recommended Jobs</span>
+            </div>
+            <div class="nav-item py-3 px-6 flex items-center cursor-pointer transition-all" data-section="applications">
+                <i class="fas fa-file-alt mr-3"></i>
+                <span>My Applications</span>
+            </div>
+              <div class="nav-item py-3 px-6 flex items-center cursor-pointer transition-all" data-section="jobs">
+                <a href="/ai">                <i class="fas fa-briefcase mr-3"></i>
+                <span>ai jobs Recommended</span></a>
+              </div>
+            <div class="nav-item py-3 px-6 flex items-center cursor-pointer transition-all" id="logout-btn">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-0 left-0 w-full p-4 text-center text-sm text-white/70">
+            ENG Abdirahman Nanab 
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 ml-64 min-h-screen p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-card p-5 mb-6 flex justify-between items-center">
+            <div class="relative w-96">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" class="w-full pl-10 pr-4 py-3 bg-light rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search for jobs, companies...">
+            </div>
+            
+            <div class="flex items-center space-x-5">
+                <div class="relative cursor-pointer">
+                    
+                </div>
+                <div class="flex items-center cursor-pointer group">
+                    <div class="bg-gradient-to-r from-primary to-primaryDark rounded-xl w-10 h-10 mr-3 flex items-center justify-center text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium" id="user-name">Loading...</div>
+                        <div class="text-sm text-gray-500" id="user-email">user@example.com</div>
+                        <div class="text-xs text-gray-500" id="user-role">Job Seeker</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile-section" class="mb-8">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-user text-primary text-2xl mr-3"></i>
+                <h2 class="text-2xl font-bold">My Profile</h2>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <form id="profile-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="name" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                            <input type="text" id="location" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Professional Title</label>
+                            <input type="text" id="title" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
+                            <input type="number" id="experience" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Skills (comma separated)</label>
+                        <input type="text" id="skills" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Loading...">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
+                        <textarea id="bio" class="w-full px-4 py-3 rounded-xl border border-lightGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="4" placeholder="Loading..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="button" id="save-profile" class="bg-primary hover:bg-primaryDark text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-lg flex items-center">
+                            <i class="fas fa-save mr-2"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div id="jobs-section" class="hidden">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-briefcase text-primary text-2xl mr-3"></i>
+                <h2 class="text-2xl font-bold">Recommended Jobs</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="jobs-container">
+                <!-- Jobs will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Applications Section -->
+        <div id="applications-section" class="hidden">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-file-alt text-primary text-2xl mr-3"></i>
+                <h2 class="text-2xl font-bold">My Applications</h2>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex border-b relative">
+                    <div class="px-4 py-2 cursor-pointer font-medium text-gray-600 hover:text-primary transition-colors" data-tab="all">All Applications</div>
+                    <div class="px-4 py-2 cursor-pointer font-medium text-gray-600 hover:text-primary transition-colors" data-tab="pending">Pending</div>
+                    <div class="px-4 py-2 cursor-pointer font-medium text-gray-600 hover:text-primary transition-colors" data-tab="reviewed">Reviewed</div>
+                    <div class="px-4 py-2 cursor-pointer font-medium text-gray-600 hover:text-primary transition-colors" data-tab="rejected">Rejected</div>
+                    <div class="px-4 py-2 cursor-pointer font-medium text-gray-600 hover:text-primary transition-colors" data-tab="offer">Offers</div>
+                    <div class="tab-indicator w-32" style="left: 0;"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-4" id="applications-container">
+                <!-- Applications will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-section" class="flex flex-col items-center justify-center py-20">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-600">Loading data...</p>
+        </div>
+        
+        <!-- Success Notification -->
+        <div id="success-notification" class="fixed top-5 right-0 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span>Profile updated successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:5000/api/seeker';
+        const AUTH_TOKEN = localStorage.getItem('authToken');
+        const savedJobs = new Set();
+        const applications = [];
+
+        // DOM Elements
+        const sections = {
+            profile: document.getElementById('profile-section'),
+            jobs: document.getElementById('jobs-section'),
+            applications: document.getElementById('applications-section'),
+            loading: document.getElementById('loading-section')
+        };
+        
+        const jobsContainer = document.getElementById('jobs-container');
+        const applicationsContainer = document.getElementById('applications-container');
+        const logoutBtn = document.getElementById('logout-btn');
+        const saveProfileBtn = document.getElementById('save-profile');
+        const navItems = document.querySelectorAll('.nav-item');
+        const successNotification = document.getElementById('success-notification');
+        const tabItems = document.querySelectorAll('[data-tab]');
+        const tabIndicator = document.querySelector('.tab-indicator');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!AUTH_TOKEN) {
+                alert('You need to login first!');
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Navigation handling
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    if (!section) return;
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Hide all sections
+                    Object.values(sections).forEach(section => {
+                        if (section.classList) {
+                            section.classList.add('hidden');
+                        }
+                    });
+                    
+                    sections.loading.classList.remove('hidden');
+                    
+                    // Show the selected section
+                    if (section === 'profile') {
+                        loadProfile();
+                    } else if (section === 'jobs') {
+                        loadJobs();
+                    } else if (section === 'applications') {
+                        loadApplications();
+                    }
+                });
+            });
+
+            // Application tabs
+            tabItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    const index = Array.from(tabItems).indexOf(this);
+                    
+                    // Update tab indicator position
+                    tabIndicator.style.left = `${index * 128}px`;
+                    tabIndicator.style.width = this.offsetWidth + 'px';
+                    
+                    // Filter applications
+                    filterApplications(tab);
+                });
+            });
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'auth.html';
+            });
+
+            // Save profile functionality
+            saveProfileBtn.addEventListener('click', updateProfile);
+            
+            // Set profile as default
+            navItems[0].click();
+        });
+
+        // Load user profile from API
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load profile');
+                
+                const user = await response.json();
+                
+                // Populate form fields
+                document.getElementById('name').value = user.name || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('phone').value = user.phone || '';
+                document.getElementById('location').value = user.location || '';
+                document.getElementById('title').value = user.title || '';
+                document.getElementById('experience').value = user.experience || '';
+                document.getElementById('skills').value = user.skills ? user.skills.join(', ') : '';
+                document.getElementById('bio').value = user.bio || '';
+                
+                // Update header
+                document.getElementById('user-name').textContent = user.name;
+                document.getElementById('user-email').textContent = user.email || 'user@example.com';
+                document.getElementById('user-role').textContent = user.role || 'Job Seeker';
+                
+                // Show profile section
+                sections.loading.classList.add('hidden');
+                sections.profile.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                sections.loading.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-xl font-medium mb-2">Error loading profile</p>
+                        <p class="text-gray-600 mb-4">${error.message || 'Please try again later'}</p>
+                        <button onclick="loadProfile()" class="bg-primary text-white px-4 py-2 rounded-lg">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Update user profile via API
+        async function updateProfile() {
+            const profileData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value,
+                title: document.getElementById('title').value,
+                experience: document.getElementById('experience').value,
+                skills: document.getElementById('skills').value.split(',').map(skill => skill.trim()),
+                bio: document.getElementById('bio').value
+            };
+            
+            // Show loading on button
+            const originalText = saveProfileBtn.innerHTML;
+            saveProfileBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Saving...';
+            saveProfileBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                
+                if (!response.ok) throw new Error('Failed to update profile');
+                
+                const user = await response.json();
+                
+                // Show success notification
+                successNotification.style.transform = 'translateX(0)';
+                setTimeout(() => {
+                    successNotification.style.transform = 'translateX(100%)';
+                }, 3000);
+                
+                // Update header
+                document.getElementById('user-name').textContent = user.name;
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                // Restore button
+                saveProfileBtn.innerHTML = originalText;
+                saveProfileBtn.disabled = false;
+            }
+        }
+
+        // Load recommended jobs from API
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_BASE}/recommended-jobs`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load jobs');
+                
+                const jobs = await response.json();
+                
+                // Render jobs with fixed structure
+                renderJobs(jobs);
+                
+                // Show jobs section
+                sections.loading.classList.add('hidden');
+                sections.jobs.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                sections.loading.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-xl font-medium mb-2">Error loading jobs</p>
+                        <p class="text-gray-600 mb-4">${error.message || 'Please try again later'}</p>
+                        <button onclick="loadJobs()" class="bg-primary text-white px-4 py-2 rounded-lg">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render jobs to the page with fixed structure
+        function renderJobs(jobs) {
+            if (!jobs || jobs.length === 0) {
+                jobsContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-12">
+                        <i class="fas fa-briefcase text-5xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-medium mb-2">No recommended jobs</h3>
+                        <p class="text-gray-600">We'll notify you when new jobs matching your profile are available.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            jobsContainer.innerHTML = '';
+            
+            jobs.forEach(job => {
+                const isSaved = savedJobs.has(job._id);
+                
+                // Format the date
+                const jobDate = new Date(job.createdAt);
+                const formattedDate = jobDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card bg-white rounded-xl shadow-card overflow-hidden';
+                jobCard.innerHTML = `
+                    <div class="bg-gradient-to-r from-primary to-primaryDark p-5 text-white">
+                        <div class="text-xl font-bold mb-1">${job.title}</div>
+                        <div class="flex flex-wrap items-center gap-4 text-sm">
+                            <span><i class="fas fa-calendar-alt mr-1"></i> Posted: ${formattedDate}</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-gray-600 mb-4">${job.description.substring(0, 150)}...</p>
+                        <div class="flex gap-3">
+                            <button class="btn-apply flex-1 bg-primary text-white py-3 rounded-lg transition-colors">
+                                Apply Now
+                            </button>
+                            <button class="btn-save w-12 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center ${isSaved ? 'saved' : ''}" data-job-id="${job._id}">
+                                <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                jobsContainer.appendChild(jobCard);
+            });
+            
+            // Add event listeners
+            document.querySelectorAll('.btn-apply').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const jobCard = this.closest('.job-card');
+                    const jobTitle = jobCard.querySelector('.text-xl').textContent;
+                    const employerId = jobCard.querySelector('span:nth-child(2)').textContent.replace('Employer ID: ', '');
+                    
+                    // Create application
+                    const newApp = {
+                        id: `app${applications.length + 1}`,
+                        jobTitle,
+                        employerId,
+                        date: new Date().toLocaleDateString(),
+                        status: 'pending'
+                    };
+                    
+                    applications.push(newApp);
+                    
+                    alert(`Application submitted for: ${jobTitle} with employer ${employerId}`);
+                });
+            });
+            
+            document.querySelectorAll('.btn-save').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const jobId = this.getAttribute('data-job-id');
+                    const icon = this.querySelector('i');
+                    
+                    if (savedJobs.has(jobId)) {
+                        savedJobs.delete(jobId);
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.classList.remove('saved');
+                    } else {
+                        savedJobs.add(jobId);
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.classList.add('saved');
+                    }
+                });
+            });
+        }
+
+        // Load applications
+        function loadApplications() {
+            // Simulated API call - in a real app, you'd fetch from your applications endpoint
+            setTimeout(() => {
+                // Render applications
+                renderApplications(applications);
+                
+                // Show applications section
+                sections.loading.classList.add('hidden');
+                sections.applications.classList.remove('hidden');
+                
+                // Set first tab as active
+                if (tabItems.length > 0) {
+                    tabItems[0].click();
+                }
+            }, 800);
+        }
+
+        // Render applications to the page
+        function renderApplications(apps) {
+            if (!apps || apps.length === 0) {
+                applicationsContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-file-alt text-5xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-medium mb-2">No applications yet</h3>
+                        <p class="text-gray-600 mb-4">Apply to jobs to see them here</p>
+                        <button onclick="document.querySelector('[data-section=\"jobs\"]').click()" class="bg-primary text-white px-4 py-2 rounded-lg">
+                            Browse Jobs
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            applicationsContainer.innerHTML = '';
+            
+            apps.forEach(app => {
+                const statusClass = `status-${app.status}`;
+                const statusText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
+                
+                const appCard = document.createElement('div');
+                appCard.className = 'app-card bg-white rounded-xl shadow-card p-5';
+                appCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold">${app.jobTitle}</h3>
+                            <p class="text-gray-600">Employer ID: ${app.employerId}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-gray-500 text-sm">
+                            <i class="far fa-calendar-alt mr-1"></i> Applied on ${app.date}
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-primary hover:text-primaryDark">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i> Withdraw
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                applicationsContainer.appendChild(appCard);
+            });
+        }
+
+        // Filter applications by status
+        function filterApplications(status) {
+            if (status === 'all') {
+                renderApplications(applications);
+                return;
+            }
+            
+            const filteredApps = applications.filter(app => app.status === status);
+            renderApplications(filteredApps);
+        }
+    </script>
+</body>
+</html>

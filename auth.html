@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered job Matcing System For Somali Youth </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3a0ca3',
+                        dark: '#0f172a',
+                        seeker: '#3b82f6',
+                        employer: '#10b981',
+                        admin: '#8b5cf6'
+                    },
+                    animation: {
+                        'gradient': 'gradient 15s ease infinite',
+                        'fade-in': 'fadeIn 0.5s ease forwards',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { 'background-position': '0% 50%' },
+                            '50%': { 'background-position': '100% 50%' },
+                        },
+                        fadeIn: {
+                            'from': { opacity: 0, transform: 'translateY(10px)' },
+                            'to': { opacity: 1, transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-gradient-animated {
+                background: linear-gradient(135deg, #b2ebf2, #b2ebf2, #b2ebf2);
+                background-size: 400% 400%;
+            }
+            
+            .card {
+                backdrop-filter: blur(10px);
+            }
+            
+            .tab-indicator {
+                border-radius: 4px 4px 0 0;
+                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            }
+            
+            .form {
+                display: none;
+            }
+            
+            .form.active {
+                display: block;
+            }
+            
+            .social-btn {
+                transition: all 0.3s ease;
+            }
+            
+            .social-btn:hover {
+                transform: translateY(-3px);
+            }
+            
+            .role-card {
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .role-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            }
+            
+            .role-card.selected {
+                border-color: currentColor;
+                box-shadow: 0 0 0 3px currentColor;
+            }
+            
+            .notification {
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-animated animate-gradient">
+    <div class="w-full max-w-md">
+        <div class="bg-white/95 rounded-2xl shadow-2xl overflow-hidden transition-all duration-400 hover:-translate-y-2 hover:shadow-3xl card">
+            <!-- Tabs -->
+            <div class="flex relative bg-gray-100 border-b border-gray-200">
+                <div class="tab flex-1 text-center py-5 text-lg font-semibold text-gray-500 cursor-pointer transition-all duration-300 relative z-10 active" data-tab="login">
+                    Login
+                </div>
+                <div class="tab flex-1 text-center py-5 text-lg font-semibold text-gray-500 cursor-pointer transition-all duration-300 relative z-10" data-tab="signup">
+                    Sign Up
+                </div>
+                <div class="tab-indicator absolute bottom-0 left-0 h-1 w-1/2 bg-gradient-to-r from-primary to-secondary"></div>
+            </div>
+            
+            <!-- Form Container -->
+            <div class="p-8">
+                <!-- Login Form -->
+                <div class="form active animate-fade-in" id="login-form">
+                    <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Welcome Back</h2>
+                    
+                    <form id="login" class="space-y-6">
+                        <div class="space-y-2 relative">
+                            <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="email" id="login-email" class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" placeholder="Enter your email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 relative">
+                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="password" id="login-password" class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" placeholder="Enter your password" required>
+                                <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer password-toggle" data-target="login-password"></i>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            Sign In
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <a href="#" class="text-sm text-primary font-semibold hover:underline">Forgot your password?</a>
+                    </div>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="form animate-fade-in" id="signup-form">
+                    <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Create Account</h2>
+                    
+                    <form id="signup" class="space-y-6">
+                        <div class="space-y-2 relative">
+                            <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="email" id="signup-email" class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" placeholder="Enter your email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 relative">
+                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="password" id="signup-password" class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" placeholder="Create a password" required>
+                                <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer password-toggle" data-target="signup-password"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Role Selection -->
+                        <div class="space-y-4">
+                            <label class="block text-sm font-medium text-gray-700">Select Your Role</label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="role-card text-seeker border-2 border-gray-200 rounded-xl p-4 text-center" data-role="seeker">
+                                    <i class="fas fa-user-graduate text-3xl mb-2"></i>
+                                    <p class="font-medium">Job Seeker</p>
+                                    <p class="text-xs text-gray-500 mt-1">Looking for opportunities</p>
+                                </div>
+                                <div class="role-card text-employer border-2 border-gray-200 rounded-xl p-4 text-center" data-role="employer">
+                                    <i class="fas fa-briefcase text-3xl mb-2"></i>
+                                    <p class="font-medium">Employer</p>
+                                    <p class="text-xs text-gray-500 mt-1">Hiring talent</p>
+                                </div>
+                                <div class="role-card text-admin border-2 border-gray-200 rounded-xl p-4 text-center" data-role="admin">
+                                    <i class="fas fa-cog text-3xl mb-2"></i>
+                                    <p class="font-medium">Admin</p>
+                                    <p class="text-xs text-gray-500 mt-1">Manage platform</p>
+                                </div>
+                            </div>
+                            <input type="hidden" id="signup-role" name="role" value="" required>
+                        </div>
+                        
+                        <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6 text-center text-sm text-gray-500">
+                        By signing up, you agree to our <a href="#" class="text-primary font-semibold hover:underline">Terms</a> and <a href="#" class="text-primary font-semibold hover:underline">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const tabs = document.querySelectorAll('.tab');
+            const tabIndicator = document.querySelector('.tab-indicator');
+            const forms = document.querySelectorAll('.form');
+            const roleCards = document.querySelectorAll('.role-card');
+            const roleInput = document.getElementById('signup-role');
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabTarget = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Move indicator
+                    const tabIndex = Array.from(tabs).indexOf(this);
+                    tabIndicator.style.transform = `translateX(${tabIndex * 100}%)`;
+                    
+                    // Show form
+                    forms.forEach(form => {
+                        form.classList.remove('active');
+                        if (form.id === `${tabTarget}-form`) {
+                            setTimeout(() => {
+                                form.classList.add('active');
+                            }, 10);
+                        }
+                    });
+                });
+            });
+            
+            // Password toggle
+            const passwordToggles = document.querySelectorAll('.password-toggle');
+            passwordToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        this.classList.remove('fa-eye');
+                        this.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        this.classList.remove('fa-eye-slash');
+                        this.classList.add('fa-eye');
+                    }
+                });
+            });
+            
+            // Role selection
+            roleCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    roleCards.forEach(c => c.classList.remove('selected'));
+                    
+                    // Add selected class to clicked card
+                    this.classList.add('selected');
+                    
+                    // Update hidden input value
+                    const role = this.getAttribute('data-role');
+                    roleInput.value = role;
+                });
+            });
+            
+            // Login form submission
+            document.getElementById('login').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    const authToken = localStorage.setItem('authToken', data.token);
+                    console.log(data);
+                    
+                    if (response.ok) {
+                        showNotification('Login successful! Redirecting...', 'success');
+                        
+                        // Redirect based on role
+                        setTimeout(() => {
+                            if (data.user.role === "seeker") {
+                                window.location.href = '/seeker';
+                            } else if (data.user.role === 'employer') {
+                                window.location.href = '/employer';
+                            } else if (data.user.role === 'admin') {
+                                window.location.href = '/admin';
+                            }
+                        }, 1500);
+                        
+                        // Reset form
+                        this.reset();
+                    } else {
+                        showNotification(data.message || 'Login failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Network error. Please try again.', 'error');
+                }
+            });
+            
+            // Signup form submission
+            document.getElementById('signup').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const role = roleInput.value;
+                
+                // Validate role selection
+                if (!role) {
+                    showNotification('Please select a role', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password, role })
+                    });
+                    
+                    const data = await response.json();
+                    const authToken = localStorage.setItem('authToken', data.token);
+                    
+                    if (response.ok) {
+                        showNotification('Account created successfully!', 'success');
+                        
+                        // Reset form
+                        this.reset();
+                        
+                        // Clear role selection
+                        roleCards.forEach(c => c.classList.remove('selected'));
+                        roleInput.value = '';
+                        
+                        // Switch to login form
+                        tabs[0].click();
+                    } else {
+                        showNotification(data.message || 'Registration failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Network error. Please try again.', 'error');
+                }
+            });
+            
+            // Notification function
+            function showNotification(message, type) {
+                // Remove existing notifications
+                const existing = document.querySelector('.notification');
+                if (existing) existing.remove();
+                
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `notification fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
+                    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
